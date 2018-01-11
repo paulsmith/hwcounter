@@ -24,7 +24,7 @@ printf(f'elapsed cycles: {t.cycles}')
 
 ## Notes
 
-The overhead of calling the underlying measurement instructions is taken into account when using the Timer context manager.
+The overhead of calling the underlying measurement instructions is taken into account when using the Timer context manager. In other words, the number of cycles it takes to call the machine instructions are subtracted from the elapsed cycle count automatically.
 
 ## Portability
 
