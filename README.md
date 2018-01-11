@@ -22,6 +22,10 @@ with Timer() as t:
 printf(f'elapsed cycles: {t.cycles}')
 ```
 
+## Notes
+
+The overhead of calling the underlying measurement instructions is taken into account when using the Timer context manager.
+
 ## Portability
 
 This extension uses the `RDTSC` and `RDTSCP` instructions on the x86 architecture, so it won't work on other platforms. It is Python 3 only.
