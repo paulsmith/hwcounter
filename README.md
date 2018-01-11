@@ -14,7 +14,9 @@ start = count()
 elapsed = count() - start
 printf(f'elapsed cycles: {elapsed}')
 
+
 # Use Timer object as context manager to wrap a block of code and measure its timing
+
 with Timer() as t:
     # ... code block to time
 printf(f'elapsed cycles: {t.cycles}')
