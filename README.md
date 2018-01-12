@@ -1,31 +1,85 @@
 # hwcounter
 
-Highly accurate timer for measuring code execution in Python
+Highly accurate counter for measuring elapsed time in Python.
+
+## Overview
+
+This Python extension module uses the hardware timestamp counter to
+provide very high precision and accurate measurements of execution
+time.
+
+The module exposes three main objects. Two are plain functions,
+`count` and `count_end`, which return the current value of the
+timestamp counter. They can be used together to manually track the
+start and end of a timing measurement. The third is the `Timer` type,
+which is to be used as a context manager, wrapping a block of code to
+be measured.
+
+### `count()`
+
+Returns the current value of the timestamp counter, in cycles.
+
+### `count_end()`
+
+Returns the current value of the timestamp counter, in cycles. It is
+suitable for use at the end of a timing measurement.
+
+### `Timer`
+
+Class that implements the context manager protocol.
+
+#### `Timer.cycles`
+
+The `cycles` attribute is populated with the elapsed time, in cycles,
+when the Timer context manager exits.
 
 ## Example usage
 
 ``` python
-from hwcounter import Timer, count
+from hwcounter import Timer, count, count_end
 
-# Manually count cycles elapsed between two points
+from time import sleep
+from math import sqrt
+
+
+# 1. Manually count cycles elapsed between two points
 
 start = count()
-# ... code execution to be measured
-elapsed = count() - start
-printf(f'elapsed cycles: {elapsed}')
+sqrt(144) / 12
+elapsed = count_end() - start
+print(f'elapsed cycles: {elapsed}')
+# elapsed cycles: 36486
 
 
-# Use Timer object as context manager to wrap a block of code and measure its timing
+# 2. Use Timer object as context manager to wrap a block of code and measure its timing
 
 with Timer() as t:
-    # ... code block to time
-printf(f'elapsed cycles: {t.cycles}')
+	sleep(1)
+print(f'elapsed cycles: {t.cycles}')
+# elapsed cycles: 2912338344
 ```
+
+These examples were performed on an Intel Core i5-6267U CPU @
+2.90GHz. Notice that the sleep for 1 second in the example above
+yields a 2.9 billion cycle count.
 
 ## Notes
 
-The overhead of calling the underlying measurement instructions is taken into account when using the Timer context manager. In other words, the number of cycles it takes to call the machine instructions are subtracted from the elapsed cycle count automatically.
+The overhead of calling the underlying measurement instructions is
+taken into account when using the Timer context manager. In other
+words, the number of cycles it takes to call the machine instructions
+are subtracted from the elapsed cycle count automatically.
+
+This library returns measurements in processor clock cycles. For
+benchmarking programs and making apples-to-apples comparisons of
+changes in code execution time, this method is sufficient and
+reliable. If elapsed time in seconds is desired, a conversion from
+clock cycles is required: divide the cycle count by the processor's
+clock speed (in Hz). This conversion is outside the scope of this
+clock speed (in module.
 
 ## Portability
 
-This extension uses the `RDTSC` and `RDTSCP` instructions on the x86 architecture, so it won't work on other platforms. It is Python 3 only.
+This extension uses the `RDTSC` and `RDTSCP` instructions on the x86
+architecture, so it won't work on other platforms. It is Python 3
+only.
