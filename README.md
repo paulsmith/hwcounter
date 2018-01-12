@@ -15,6 +15,11 @@ start and end of a timing measurement. The third is the `Timer` type,
 which is to be used as a context manager, wrapping a block of code to
 be measured.
 
+Using `Timer` to wrap a block of code is to be preferred over
+manually using `count` and `count_end`. This is for convenience, as well
+as because it factors in the overhead of calling the underlying
+measurement instructions.
+
 ### `count()`
 
 Returns the current value of the timestamp counter, in cycles.
@@ -76,7 +81,7 @@ changes in code execution time, this method is sufficient and
 reliable. If elapsed time in seconds is desired, a conversion from
 clock cycles is required: divide the cycle count by the processor's
 clock speed (in Hz). This conversion is outside the scope of this
-clock speed (in module.
+module.
 
 ## Portability
 
