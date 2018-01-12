@@ -1,11 +1,3 @@
-/**
- * 
- * hwcounter is a module that allows for very accurate,
- * high-resolution measurement of code execution time, in terms of
- * processor clock cycles.
- *
- */
-
 #include <stddef.h>
 
 #include "Python.h"
@@ -13,17 +5,18 @@
 
 #define HWCOUNTER_GET_TIMESTAMP(count_ptr)				\
     do {								\
-	uint32_t count_high, count_low;				\
+	uint32_t count_high, count_low;					\
 	asm volatile (							\
 		      "cpuid\n\t"					\
 		      "rdtsc\n\t"					\
-		      : "=a" (count_low), "=d" (count_high));		\
-	*count_ptr = ((uint64_t)count_high << 32) | count_low; \
+		      : "=a" (count_low), "=d" (count_high)		\
+		      :: "ebx", "ecx");					\
+	*count_ptr = ((uint64_t)count_high << 32) | count_low;		\
     } while(0)
 
 #define HWCOUNTER_GET_TIMESTAMP_END(count_ptr)				\
     do {								\
-	uint32_t count_high, count_low;				\
+	uint32_t count_high, count_low;					\
 	asm volatile (							\
 		      "rdtscp\n\t"					\
 		      "mov %%edx, %0\n\t"				\
@@ -31,7 +24,7 @@
 		      "cpuid\n\t"					\
 		      : "=r" (count_high), "=r" (count_low)		\
 		      :: "eax", "ebx", "ecx", "edx");			\
-	*count_ptr = ((uint64_t)count_high << 32) | count_low; \
+	*count_ptr = ((uint64_t)count_high << 32) | count_low;		\
     } while(0)
 
 uint64_t
@@ -48,7 +41,6 @@ hwcounter_measure_overhead(void)
 	    overhead = elapsed;
     }
 
-    printf("overhead: %llu\n", overhead);
     return overhead;
 }
 
