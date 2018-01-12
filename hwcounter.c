@@ -13,17 +13,17 @@
 
 #define HWCOUNTER_GET_TIMESTAMP(count_ptr)				\
     do {								\
-	unsigned int count_high, count_low;				\
+	uint32_t count_high, count_low;				\
 	asm volatile (							\
 		      "cpuid\n\t"					\
 		      "rdtsc\n\t"					\
 		      : "=a" (count_low), "=d" (count_high));		\
-	*count_ptr = ((unsigned long long)count_high << 32) | count_low; \
+	*count_ptr = ((uint64_t)count_high << 32) | count_low; \
     } while(0)
 
 #define HWCOUNTER_GET_TIMESTAMP_END(count_ptr)				\
     do {								\
-	unsigned int count_high, count_low;				\
+	uint32_t count_high, count_low;				\
 	asm volatile (							\
 		      "rdtscp\n\t"					\
 		      "mov %%edx, %0\n\t"				\
@@ -31,67 +31,54 @@
 		      "cpuid\n\t"					\
 		      : "=r" (count_high), "=r" (count_low)		\
 		      :: "eax", "ebx", "ecx", "edx");			\
-	*count_ptr = ((unsigned long long)count_high << 32) | count_low; \
+	*count_ptr = ((uint64_t)count_high << 32) | count_low; \
     } while(0)
 
-unsigned long long
+uint64_t
 hwcounter_measure_overhead(void)
 {
-    unsigned long long subts;
+    uint64_t t0, t1, elapsed, overhead = ~0;
 
-#define STANZA   "cpuid\n\t"			\
-	"rdtsc\n\t"				\
-	"shl $32, %%rdx\n\t"			\
-	"or %%rax, %%rdx\n\t"			\
-	"mov %%rdx, %0\n\t"			\
-	"rdtscp\n\t"				\
-	"shl $32, %%rdx\n\t"			\
-	"or %%rax, %%rdx\n\t"			\
-	"sub %0, %%rdx\n\t"			\
-	"mov %%rdx, %0\n\t"			\
-	"cpuid\n\t"
+    for (int i = 0; i < 3; i++) {
+	HWCOUNTER_GET_TIMESTAMP(&t0);
+	asm volatile("");
+	HWCOUNTER_GET_TIMESTAMP_END(&t1);
+	elapsed = t1 - t0;
+	if (elapsed < overhead)
+	    overhead = elapsed;
+    }
 
-    asm volatile(STANZA
-		 STANZA
-		 STANZA
-		 :: "m" (subts));
-
-#undef STANZA
-
-    return subts;
+    printf("overhead: %llu\n", overhead);
+    return overhead;
 }
 
 static PyObject *
 hwcounter_get_count(PyObject *self, PyObject *args)
 {
-    unsigned long long ts, overhead;
+    uint64_t ts;
 
     (void)self;
     (void)args;
-    overhead = hwcounter_measure_overhead();
     HWCOUNTER_GET_TIMESTAMP(&ts);
-    ts -= overhead;
     return PyLong_FromUnsignedLongLong(ts);
 }
 
 static PyObject *
 hwcounter_get_count_end(PyObject *self, PyObject *args)
 {
-    unsigned long long ts, overhead;
+    uint64_t ts;
 
     (void)self;
     (void)args;
-    overhead = hwcounter_measure_overhead();
     HWCOUNTER_GET_TIMESTAMP_END(&ts);
-    ts -= overhead;
     return PyLong_FromUnsignedLongLong(ts);
 }
 
 typedef struct {
     PyObject_HEAD
-    unsigned long long t0;
-    unsigned long long overhead;
-    unsigned long long cycles;
+    uint64_t t0;
+    uint64_t overhead;
+    uint64_t cycles;
 } hwcounter_Timer;
 
 static void
@@ -103,32 +90,33 @@ hwcounter_Timer_dealloc(hwcounter_Timer *self)
 static PyObject *
 hwcounter_Timer_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    hwcounter_Timer *self;
+    hwcounter_Timer *t;
 
-    self = (hwcounter_Timer *)type->tp_alloc(type, 0);
-    if (self != NULL) {
-	self->t0 = 0;
-	self->overhead = 0;
-	self->cycles = 0;
+    t = (hwcounter_Timer *)type->tp_alloc(type, 0);
+    if (t != NULL) {
+	t->t0 = 0;
+	t->overhead = 0;
+	t->cycles = 0;
     }
 
-    return (PyObject *)self;
+    return (PyObject *)t;
 }
 
 static PyObject *
 hwcounter_Timer___enter__(PyObject *self)
 {
     hwcounter_Timer *timer = (hwcounter_Timer *)self;
+
     timer->overhead = hwcounter_measure_overhead();
     HWCOUNTER_GET_TIMESTAMP(&timer->t0);
     Py_INCREF(self);
-    return (PyObject *)self;
+    return self;
 }
 
 static PyObject *
 hwcounter_Timer___exit__(PyObject *self, PyObject *args)
 {
-    unsigned long long ts;
+    uint64_t ts;
     hwcounter_Timer *timer = (hwcounter_Timer *)self;
 
     (void)args;
@@ -208,7 +196,7 @@ static struct PyModuleDef hwcounter_module = {
 };
 
 PyMODINIT_FUNC
-PyInit__hwcounter(void)
+PyInit_hwcounter(void)
 {
     PyObject *m;
 
