@@ -2,6 +2,12 @@
 
 Highly accurate counter for measuring elapsed time in Python.
 
+## Installation
+
+``` shell
+$ pip install hwcounter
+```
+
 ## Overview
 
 This Python extension module uses the hardware timestamp counter to
