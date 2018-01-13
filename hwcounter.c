@@ -132,7 +132,7 @@ static PyMethodDef hwcounter_Timer_methods[] = {
 
 static PyTypeObject hwcounter_TimerType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "_hwcounter.Timer",        /* tp_name */
+    "hwcounter.Timer",         /* tp_name */
     sizeof(hwcounter_Timer),   /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)hwcounter_Timer_dealloc, /* tp_dealloc */
@@ -181,7 +181,7 @@ static PyMethodDef hwcounter_methods[] = {
 
 static struct PyModuleDef hwcounter_module = {
     PyModuleDef_HEAD_INIT,
-    "_hwcounter",
+    "hwcounter",
     "This module provides access to a very accurate, high-resolution hardware counter for measurement of time, in terms of processor clock cycles.",
     -1,
     hwcounter_methods
