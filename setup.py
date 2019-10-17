@@ -4,7 +4,7 @@ import sys
 
 here = path.abspath(path.dirname(__file__))
 
-if sys.version_info[0] > 3:
+if sys.version_info[0] >= 3:
     with open(path.join(here, 'README.md'), encoding='utf-8') as f:
         long_description = f.read()
 else:
