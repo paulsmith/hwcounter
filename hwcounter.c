@@ -180,7 +180,8 @@ static PyMethodDef hwcounter_methods[] = {
 };
 
 static struct PyModuleDef hwcounter_module = {
-    PyModuleDef_HEAD_INIT,
+//    PyModuleDef_HEAD_INIT,
+    PyObject_HEAD_INIT,
     "hwcounter",
     "This module provides access to a very accurate, high-resolution hardware counter for measurement of time, in terms of processor clock cycles.",
     -1,
