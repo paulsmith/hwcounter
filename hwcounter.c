@@ -213,7 +213,7 @@ PyInit_hwcounter(void)
 #else
 // module initialization for python2
 PyMODINIT_FUNC
-init_hwcounter(void)
+inithwcounter(void)
 {
     PyObject *m;
 
