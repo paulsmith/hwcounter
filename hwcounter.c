@@ -3,6 +3,10 @@
 #include "Python.h"
 #include "structmember.h"
 
+#if PY_MAJOR_VERSION >= 3
+#define PY3K
+#endif
+
 #define HWCOUNTER_GET_TIMESTAMP(count_ptr)				\
     do {								\
 	uint32_t count_high, count_low;					\
@@ -179,6 +183,8 @@ static PyMethodDef hwcounter_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+#ifdef PY3K
+// module initialization for python3
 static struct PyModuleDef hwcounter_module = {
     PyModuleDef_HEAD_INIT,
     "hwcounter",
@@ -204,3 +210,23 @@ PyInit_hwcounter(void)
 
     return m;
 }
+#else
+// module initialization for python2
+PyMODINIT_FUNC
+inithwcounter(void)
+{
+    PyObject *m;
+
+    hwcounter_TimerType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&hwcounter_TimerType) < 0)
+	return NULL;
+
+    if ((m = Py_InitModule3("hwcounter", hwcounter_methods, "This module provides access to a very accurate, high-resolution hardware counter for measurement of time, in terms of processor clock cycles.")) == NULL)
+	return NULL;
+
+    Py_INCREF(&hwcounter_TimerType);
+    PyModule_AddObject(m, "Timer", (PyObject *)&hwcounter_TimerType);
+
+    return m;
+}
+#endif
