@@ -12,7 +12,7 @@ else:
         long_description = f.read()
 
 setup(name = 'hwcounter',
-      version = '0.1.1',
+      version = '0.1.2',
       description = 'Highly accurate counter for measuring elapsed time in Python',
       long_description = long_description,
       url = 'https://github.com/paulsmith/hwcounter',
